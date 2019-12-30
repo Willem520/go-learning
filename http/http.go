@@ -13,39 +13,68 @@ description：http请求
 date：2019-12-10 15:42
 */
 
-func DoGet(url *string, bodyStr *string) string {
-	return Do("GET", url, bodyStr)
+const (
+	BodyJson    = "JSON"
+	BodyDefault = "DEFAULT"
+
+	RequestGet  = "GET"
+	RequestPost = "POST"
+	RequestPut  = "PUT"
+)
+
+var ContentType = map[string]string{
+	BodyJson:    "application/json",
+	BodyDefault: "application/x-www-form-urlencoded",
 }
 
-func DoPost(url *string, bodyStr *string) string {
-	return Do("POST", url, bodyStr)
+func DoGet(url string, bodyType string, auth string, bodyStr string) string {
+	return Do(url, RequestGet, bodyType, auth, bodyStr)
 }
 
-func Do(method string, url *string, bodyStr *string) string {
+func DoPost(url string, bodyType string, auth string, bodyStr string) string {
+	return Do(url, RequestPost, bodyType, auth, bodyStr)
+}
+
+func Do(url string, method string, bodyType string, auth string, bodyStr string) string {
+	log.Println("do request => ", method, url, bodyStr)
+
 	client := &http.Client{}
-
-	req, reqErr := http.NewRequest(strings.ToUpper(method), *url, strings.NewReader(*bodyStr))
+	req, reqErr := http.NewRequest(strings.ToUpper(method), url, strings.NewReader(bodyStr))
 
 	if reqErr != nil {
-		log.Fatalln("error")
+		log.Fatalln("new request error => ", reqErr)
 		return ""
 	}
 
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	switch strings.ToUpper(bodyType) {
+	case BodyJson:
+		req.Header.Set("Content-Type", ContentType[BodyJson])
+	default:
+		req.Header.Set("Content-Type", ContentType[BodyDefault])
+	}
+
+	if auth != "" {
+		req.Header.Set("Authorization", auth)
+	}
 
 	resp, respErr := client.Do(req)
 
 	if respErr != nil {
-		log.Fatalln("error")
+		log.Fatalln("request error => ", respErr)
+		return ""
+	}
+
+	body, bodyErr := ioutil.ReadAll(resp.Body)
+
+	if bodyErr != nil {
+		log.Fatalln("get response error => ", bodyErr)
 		return ""
 	}
 
 	defer resp.Body.Close()
 
-	body, bodyErr := ioutil.ReadAll(resp.Body)
-
-	if bodyErr != nil {
-		log.Fatalln(bodyErr)
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalln("response error => ", resp.Status, string(body))
 		return ""
 	}
 
