@@ -28,14 +28,14 @@ var ContentType = map[string]string{
 }
 
 func DoGet(url string, bodyType string, auth string, bodyStr string) string {
-	return Do(url, RequestGet, bodyType, auth, bodyStr)
+	return Do(RequestGet, url, bodyType, auth, bodyStr)
 }
 
 func DoPost(url string, bodyType string, auth string, bodyStr string) string {
-	return Do(url, RequestPost, bodyType, auth, bodyStr)
+	return Do(RequestPost, url, bodyType, auth, bodyStr)
 }
 
-func Do(url string, method string, bodyType string, auth string, bodyStr string) string {
+func Do(method string, url string, bodyType string, auth string, bodyStr string) string {
 	log.Println("do request => ", method, url, bodyStr)
 
 	client := &http.Client{}
@@ -58,6 +58,7 @@ func Do(url string, method string, bodyType string, auth string, bodyStr string)
 	}
 
 	resp, respErr := client.Do(req)
+	defer resp.Body.Close()
 
 	if respErr != nil {
 		log.Fatalln("request error => ", respErr)
@@ -66,14 +67,7 @@ func Do(url string, method string, bodyType string, auth string, bodyStr string)
 
 	body, bodyErr := ioutil.ReadAll(resp.Body)
 
-	if bodyErr != nil {
-		log.Fatalln("get response error => ", bodyErr)
-		return ""
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
+	if bodyErr != nil || resp.StatusCode != http.StatusOK {
 		log.Fatalln("response error => ", resp.Status, string(body))
 		return ""
 	}
