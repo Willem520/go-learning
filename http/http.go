@@ -58,12 +58,13 @@ func Do(method string, url string, bodyType string, auth string, bodyStr string)
 	}
 
 	resp, respErr := client.Do(req)
-	defer resp.Body.Close()
 
 	if respErr != nil {
 		log.Fatalln("request error => ", respErr)
 		return ""
 	}
+
+	defer resp.Body.Close()
 
 	body, bodyErr := ioutil.ReadAll(resp.Body)
 
