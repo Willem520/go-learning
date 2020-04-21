@@ -19,4 +19,15 @@ func TestMap(t *testing.T) {
 
 	v, ok := m["answer"]
 	fmt.Println("the value", v, "present?", ok)
+
+	color := map[string]string{
+		"AliceBlue":   "#f0f8ff",
+		"Coral":       "#ff7f50",
+		"DarkGray":    "#a9a9a9",
+		"ForestGreen": "#228b22",
+	}
+
+	for key, value := range color {
+		fmt.Printf("Key: %s Value:%s\n", key, value)
+	}
 }
