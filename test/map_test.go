@@ -14,6 +14,7 @@ func TestMap(t *testing.T) {
 	m["answer"] = 48
 	fmt.Println("the value:", m["answer"])
 
+	//删除映射中的元素
 	delete(m, "answer")
 	fmt.Println("the value:", m["answer"])
 
