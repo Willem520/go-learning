@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,23 +28,22 @@ var ContentType = map[string]string{
 	BodyDefault: "application/x-www-form-urlencoded",
 }
 
-func DoGet(url string, bodyType string, auth string, bodyStr string) string {
+func DoGet(url string, bodyType string, auth string, bodyStr string) (string, error) {
 	return Do(RequestGet, url, bodyType, auth, bodyStr)
 }
 
-func DoPost(url string, bodyType string, auth string, bodyStr string) string {
+func DoPost(url string, bodyType string, auth string, bodyStr string) (string, error) {
 	return Do(RequestPost, url, bodyType, auth, bodyStr)
 }
 
-func Do(method string, url string, bodyType string, auth string, bodyStr string) string {
+func Do(method string, url string, bodyType string, auth string, bodyStr string) (string, error) {
 	log.Println("do request => ", method, url, bodyStr)
 
 	client := &http.Client{}
 	req, reqErr := http.NewRequest(strings.ToUpper(method), url, strings.NewReader(bodyStr))
 
 	if reqErr != nil {
-		log.Fatalln("new request error => ", reqErr)
-		return ""
+		return "", reqErr
 	}
 
 	switch strings.ToUpper(bodyType) {
@@ -60,18 +60,20 @@ func Do(method string, url string, bodyType string, auth string, bodyStr string)
 	resp, respErr := client.Do(req)
 
 	if respErr != nil {
-		log.Fatalln("request error => ", respErr)
-		return ""
+		return "", respErr
 	}
 
 	defer resp.Body.Close()
 
 	body, bodyErr := ioutil.ReadAll(resp.Body)
 
-	if bodyErr != nil || resp.StatusCode != http.StatusOK {
-		log.Fatalln("response error => ", resp.Status, string(body))
-		return ""
+	if bodyErr != nil {
+		return "", bodyErr
 	}
 
-	return string(body)
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New(resp.Status + "," + string(body))
+	}
+
+	return string(body), nil
 }
