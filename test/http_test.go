@@ -9,6 +9,6 @@ import (
 func TestHttp(t *testing.T) {
 	url := "https://www.baidu.com"
 	body := ""
-	resp := http.DoGet(&url, &body)
+	resp := http.DoGet(url, "json", "", body)
 	log.Println("======resp:" + resp)
 }
