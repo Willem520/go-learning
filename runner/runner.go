@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+/*
+author：willem
+description：
+date：2020-07-09 00:02
+*/
+
 type Runner struct {
 	interrupt chan os.Signal
 	complete  chan error
